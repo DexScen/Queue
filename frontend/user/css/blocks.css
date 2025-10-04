@@ -6,10 +6,11 @@
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
             overflow: hidden;
             max-width: 800px;
+            padding: 10px;
+            gap: 20px;
             transition: transform 0.3s ease, box-shadow 0.3s ease;
             
 }
-
 .back-color-white{
     background-color: white;
 }
