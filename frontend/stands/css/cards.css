@@ -1,0 +1,146 @@
+ .card {
+            display: flex;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            max-width: 800px;
+            width: 100%;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            max-height: 200px;
+        }
+        .card-img{
+          
+   width: 100%;
+  height: 100%; /* Картинка растянется на всю ширину и высоту */
+  object-fit: fill;
+        }
+        /* .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+        } */
+        
+        .card-content {
+            padding: 30px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        
+        .card-header {
+            margin-bottom: 25px;
+        }
+        
+        .stand-number {
+            font-size: 28px;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .queue-info {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 25px;
+            text-align: center;
+            border-left: 4px solid #3498db;
+        }
+        
+        .queue-count {
+            font-size: 42px;
+            font-weight: 800;
+            color: #e74c3c;
+            margin-bottom: 5px;
+        }
+        
+        .queue-label {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 12px;
+        }
+        
+        .time-estimate {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .signup-button {
+            background: linear-gradient(to right, #3498db, #2980b9);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 14px 0;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 25px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+        }
+        
+        .signup-button:hover {
+            background: linear-gradient(to right, #2980b9, #1f639c);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+        }
+        
+        .bank-name {
+            font-size: 24px;
+            font-weight: 700;
+            color: #2c3e50;
+            text-align: center;
+            padding-top: 15px;
+            border-top: 2px solid #ecf0f1;
+        }
+        
+        .card-image {
+            flex: 0 0 40%;
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 0;
+            color: white;
+            position: relative;
+            overflow: hidden;
+            min-width: 220px;
+        }
+        
+        /* .card-image::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+            transform: rotate(30deg);
+        } */
+        
+    
+        
+        .image-text {
+            font-size: 20px;
+            font-weight: 600;
+            text-align: center;
+            z-index: 1;
+        }
+        
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 1;
+        }
+    

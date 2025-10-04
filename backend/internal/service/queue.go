@@ -22,6 +22,8 @@ type QueuesRepository interface {
 
 	AddPlayerToQueue(ctx context.Context, user_id, game_id int) (int, error)
 	RemovePlayerFromQueue(ctx context.Context, user_id, game_id int) error
+
+	GetPlayersByGameID(ctx context.Context, game_id int, listUsers *domain.ListUsers) error
 }
 
 type Queues struct {
@@ -93,4 +95,8 @@ func (q *Queues) AddPlayerToQueue(ctx context.Context, user_id, game_id int) (in
 
 func (q *Queues) GetIdByLogin(ctx context.Context, login string) (int,error){
 	return q.repo.GetIdByLogin(ctx, login)
+}
+
+func (q *Queues) GetPlayersByGameID(ctx context.Context, game_id int, listUsers *domain.ListUsers) error{
+	return q.repo.GetPlayersByGameID(ctx, game_id, listUsers)
 }

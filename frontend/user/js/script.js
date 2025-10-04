@@ -13,7 +13,13 @@ document.addEventListener('DOMContentLoaded', async function () {
             profileLink.textContent = username;
         }
 
-        try {
+        await loadAndRenderQueues(username);
+        startAutoRefresh(username);  
+    }
+});
+
+async function loadAndRenderQueues(username) {
+    try {
             const response = await fetch(`http://localhost:8080/queue/${username}`);
 
             if (response.ok) {
@@ -21,14 +27,32 @@ document.addEventListener('DOMContentLoaded', async function () {
                 renderQueues(userData);
             }
         } catch (error) {
-            console.error('Ошибка:', error);
+            console.error('Ошибка при загрузке очередей:', error);
         }
-    }
-});
+}
+
+function startAutoRefresh(username) {
+    setInterval(async () => {
+        console.log("автоматическое обновление данных... (кд - 5 сек)");
+        await loadAndRenderQueues(username);
+    }, 5000); // 5000 мс 
+}
 
 function renderQueues(queues) {
     const container = document.querySelector('[data-container]');
     container.innerHTML = '';
+
+    if (!queues || !Array.isArray(queues)) {
+        console.log('Нет данных об очередях или данные некорректны');
+        container.innerHTML = '<p>У вас нет активных очередей</p>';
+        return;
+    }
+
+    if (queues.length === 0) {
+        console.log('Массив очередей пуст');
+        container.innerHTML = '<p>У вас нет активных очередей</p>';
+        return;
+    }
 
     queues.forEach(stand => {
         const card = document.createElement('div');
@@ -37,6 +61,7 @@ function renderQueues(queues) {
 
         const waitTimeMinutes = Math.ceil(stand.current_people * stand.duration_seconds / 60);
 
+        //  <button type="button" class="btn-standart">обновить</button>
         card.innerHTML = `
             <h3 class="queue-name">${stand.name}</h3>
             <p class="queue-info">
@@ -44,7 +69,6 @@ function renderQueues(queues) {
                 очередь: ${stand.current_people} чел.
             </p>
             <div class="queue-actions">
-                <button type="button" class="btn-standart">обновить</button>
                 <button type="button" class="btn-delete" data-stand-id="${stand.id}">удалить</button>
             </div>
         `;
@@ -63,10 +87,8 @@ function renderQueues(queues) {
                 }
             });
 
-            // Сначала преобразуем ответ в JSON
             const data = await response.json();
 
-            // Теперь можно получить id
             const userID = data.id;
             console.log(userID);
 
@@ -87,6 +109,7 @@ function renderQueues(queues) {
                     if (cardToRemove) {
                         cardToRemove.remove();
                     }
+                    await loadAndRenderQueues(username);
 
                     console.log(`Очередь ${standId} успешно удалена`);
                 } else {

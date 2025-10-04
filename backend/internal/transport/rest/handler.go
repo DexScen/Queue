@@ -24,6 +24,8 @@ type Queues interface {
 
 	RemovePlayerFromQueue(ctx context.Context, user_id, game_id int) error
 	AddPlayerToQueue(ctx context.Context, user_id, game_id int) (int, error)
+
+	GetPlayersByGameID(ctx context.Context, game_id int, listUsers *domain.ListUsers) error
 }
 
 type Handler struct {
@@ -58,11 +60,14 @@ func (h *Handler) InitRouter() *mux.Router {
 		links.HandleFunc("/games/{id}", h.GetGameInfoByID).Methods(http.MethodGet)
 		links.HandleFunc("/queue/{login}", h.GetGamesByLogin).Methods(http.MethodGet)
 		links.HandleFunc("/auth/{login}", h.GetIdByLogin).Methods(http.MethodGet)
+
 		links.HandleFunc("/auth/register", h.Register).Methods(http.MethodPost)
 		links.HandleFunc("/auth/login", h.LogIn).Methods(http.MethodPost)
-
+		
 		links.HandleFunc("/remove", h.RemovePlayerFromQueue).Methods(http.MethodDelete)
 		links.HandleFunc("/add", h.AddPlayerToQueue).Methods(http.MethodPost)
+
+		links.HandleFunc("/players/{id}", h.GetPlayersByGameID).Methods(http.MethodGet)
 
 		links.HandleFunc("", h.OptionsHandler).Methods(http.MethodOptions)
 		links.PathPrefix("/").HandlerFunc(h.OptionsHandler).Methods(http.MethodOptions)
@@ -286,6 +291,35 @@ func (h *Handler) GetIdByLogin(w http.ResponseWriter, r *http.Request){
 	if jsonResp, err := json.Marshal(idStr); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("GetIdByLogin error:", err)
+		return
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResp)
+	}
+}
+
+func (h *Handler) GetPlayersByGameID(w http.ResponseWriter, r *http.Request){
+	setHeaders(w)
+	var list domain.ListUsers
+	vars := mux.Vars(r)
+	idStr := vars["id"]
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil{
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("getPlayersByGameID error:", err)
+		return
+	}
+
+	if err := h.queuesService.GetPlayersByGameID(context.TODO(), id, &list); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("getPlayersByGameID error:", err)
+		return
+	}
+
+	if jsonResp, err := json.Marshal(list); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("getPlayersByGameID error:", err)
 		return
 	} else {
 		w.Header().Set("Content-Type", "application/json")

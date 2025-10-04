@@ -298,3 +298,28 @@ func (q *Queues) GetIdByLogin(ctx context.Context, login string) (int, error) {
 
     return id, nil
 }
+
+func (q *Queues) GetPlayersByGameID(ctx context.Context, gameID int, listUsers *domain.ListUsers) error {
+    rows, err := q.db.QueryContext(ctx, `
+        SELECT u.id, u.login
+        FROM queue q
+        JOIN users u ON q.user_id = u.id
+        WHERE q.game_id = $1
+    `, gameID)
+    if err != nil {
+        return err
+    }
+    defer rows.Close()
+
+    var users domain.ListUsers
+    for rows.Next() {
+        var u domain.User
+        if err := rows.Scan(&u.ID, &u.Login); err != nil {
+            return err
+        }
+        users = append(users, u)
+    }
+
+    *listUsers = users
+    return rows.Err()
+}

@@ -20,6 +20,8 @@ type User struct {
 	Role     string `json:"role"`
 }
 
+type ListUsers []User
+
 type LoginInfo struct {
 	Login    string `json:"login"`
 	Password string `json:"password"`

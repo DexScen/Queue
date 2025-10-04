@@ -52,7 +52,13 @@ INSERT INTO queue (user_id, game_id, position, status)
 VALUES (1, 2, 1, 'waiting');
 
 INSERT INTO queue (user_id, game_id, position, status)
-VALUES (5, 2, 1, 'waiting');
+VALUES (5, 2, 2, 'waiting');
 
 INSERT INTO queue (user_id, game_id, position, status)
 VALUES (5, 3, 1, 'waiting');
+
+INSERT INTO queue (user_id, game_id, position, status)
+VALUES (5, 1, 2, 'waiting');
+
+INSERT INTO queue (user_id, game_id, position, status)
+VALUES (2, 1, 3, 'waiting');
