@@ -3,13 +3,13 @@ package rest
 import (
 	"context"
 	"encoding/json"
-	 "errors"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 
 	"github.com/DexScen/Queue/backend/internal/domain"
-	 e "github.com/DexScen/Queue/backend/internal/errors"
+	e "github.com/DexScen/Queue/backend/internal/errors"
 	"github.com/gorilla/mux"
 )
 
@@ -17,6 +17,7 @@ type Queues interface {
 	GetAllGames(ctx context.Context, listGames *domain.ListGames) error
 	GetGameInfoByID(ctx context.Context, id int) (*domain.Game, error)
 	GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error
+	GetIdByLogin(ctx context.Context, login string) (int, error)
 
 	Register(ctx context.Context, user *domain.User) error
 	LogIn(ctx context.Context, login, password string) (string, error)
@@ -49,13 +50,14 @@ func (h *Handler) OptionsHandler(w http.ResponseWriter, r *http.Request) {
 func (h *Handler) InitRouter() *mux.Router {
 	r := mux.NewRouter().StrictSlash(true)
 	r.Use(loggingMiddleware)
+	r.Use(corsMiddleware)
 
 	links := r.PathPrefix("").Subrouter()
 	{
 		links.HandleFunc("/games", h.GetAllGames).Methods(http.MethodGet)
 		links.HandleFunc("/games/{id}", h.GetGameInfoByID).Methods(http.MethodGet)
 		links.HandleFunc("/queue/{login}", h.GetGamesByLogin).Methods(http.MethodGet)
-		
+		links.HandleFunc("/auth/{login}", h.GetIdByLogin).Methods(http.MethodGet)
 		links.HandleFunc("/auth/register", h.Register).Methods(http.MethodPost)
 		links.HandleFunc("/auth/login", h.LogIn).Methods(http.MethodPost)
 
@@ -63,11 +65,13 @@ func (h *Handler) InitRouter() *mux.Router {
 		links.HandleFunc("/add", h.AddPlayerToQueue).Methods(http.MethodPost)
 
 		links.HandleFunc("", h.OptionsHandler).Methods(http.MethodOptions)
+		links.PathPrefix("/").HandlerFunc(h.OptionsHandler).Methods(http.MethodOptions)
+
 	}
 	return r
 }
 
-func (h *Handler) AddPlayerToQueue(w http.ResponseWriter, r *http.Request){
+func (h *Handler) AddPlayerToQueue(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
 	var addInfo domain.ChangeInfo
 	var pos domain.PosInfo
@@ -76,15 +80,15 @@ func (h *Handler) AddPlayerToQueue(w http.ResponseWriter, r *http.Request){
 		log.Println("addPlayerToQueue error:", err)
 		return
 	}
-    
-    position, err := h.queuesService.AddPlayerToQueue(r.Context(), addInfo.UserID, addInfo.GameID)
-    if err != nil {
-        w.WriteHeader(http.StatusInternalServerError)
+
+	position, err := h.queuesService.AddPlayerToQueue(r.Context(), addInfo.UserID, addInfo.GameID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("addPlayerToQueue error:", err)
-        return
-    }
+		return
+	}
 	pos.Pos = position
-    if jsonResp, err := json.Marshal(pos); err != nil {
+	if jsonResp, err := json.Marshal(pos); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("addPlayerToQueue error:", err)
 		return
@@ -103,18 +107,18 @@ func (h *Handler) RemovePlayerFromQueue(w http.ResponseWriter, r *http.Request) 
 		log.Println("RemovePlayerFromQueue error:", err)
 		return
 	}
-    
-    err := h.queuesService.RemovePlayerFromQueue(r.Context(), removeInfo.UserID, removeInfo.GameID)
-    if err != nil {
-        w.WriteHeader(http.StatusInternalServerError)
-		log.Println("RemovePlayerFromQueue error:", err)
-        return
-    }
 
-    w.WriteHeader(http.StatusNoContent)
+	err := h.queuesService.RemovePlayerFromQueue(r.Context(), removeInfo.UserID, removeInfo.GameID)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("RemovePlayerFromQueue error:", err)
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
 }
 
-func (h *Handler) GetAllGames(w http.ResponseWriter, r *http.Request){
+func (h *Handler) GetAllGames(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
 	var list domain.ListGames
 	if err := h.queuesService.GetAllGames(context.TODO(), &list); err != nil {
@@ -133,7 +137,7 @@ func (h *Handler) GetAllGames(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func (h *Handler) GetGameInfoByID(w http.ResponseWriter, r *http.Request){
+func (h *Handler) GetGameInfoByID(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
@@ -162,7 +166,7 @@ func (h *Handler) GetGameInfoByID(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func (h *Handler) GetGamesByLogin(w http.ResponseWriter, r *http.Request){
+func (h *Handler) GetGamesByLogin(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)
 	vars := mux.Vars(r)
 	loginStr := vars["login"]
@@ -250,7 +254,7 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 	} else { // user registered success
 		role, err := h.queuesService.LogIn(context.TODO(), user.Login, user.Password)
 		roleInfo.Role = role
-		if err != nil{
+		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			log.Println("Register error:", err)
 			return
@@ -263,5 +267,28 @@ func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
 			w.Write(jsonResp)
 		}
+	}
+}
+
+func (h *Handler) GetIdByLogin(w http.ResponseWriter, r *http.Request){
+	vars := mux.Vars(r)
+	loginStr := vars["login"]
+
+	var idStr domain.IdInfo
+	id, err := h.queuesService.GetIdByLogin(context.TODO(), loginStr)
+
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("GetIdByLogin error:", err)
+		return
+	}
+	idStr.Id = id
+	if jsonResp, err := json.Marshal(idStr); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("GetIdByLogin error:", err)
+		return
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResp)
 	}
 }

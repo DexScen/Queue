@@ -13,6 +13,7 @@ type QueuesRepository interface {
 	GetAllGames(ctx context.Context, listGames *domain.ListGames) error
 	GetGameInfoByID(ctx context.Context, id int) (*domain.Game, error)
 	GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error
+	GetIdByLogin(ctx context.Context, login string) (int, error)
 
 	GetPassword(ctx context.Context, login string) (string, error)
 	GetRole(ctx context.Context, login string) (string, error)
@@ -88,4 +89,8 @@ func (q *Queues) RemovePlayerFromQueue(ctx context.Context, user_id, game_id int
 
 func (q *Queues) AddPlayerToQueue(ctx context.Context, user_id, game_id int) (int, error){
 	return q.repo.AddPlayerToQueue(ctx , user_id, game_id)
+}
+
+func (q *Queues) GetIdByLogin(ctx context.Context, login string) (int,error){
+	return q.repo.GetIdByLogin(ctx, login)
 }

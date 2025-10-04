@@ -2,11 +2,11 @@ const form = document.querySelector("[data-login-dialog]");
 const secondaryBtn = document.querySelector("[data-secondary-btn]");
 
 secondaryBtn.addEventListener('click', () => {
-    console.log("Кнопка 'Зарегистрироваться' нажата"); 
-    window.location.href = '../registration/index.html';
+    console.log("Кнопка 'Зарегистрироваться' нажата");
+    window.location.href = '/registration/';
 });
 
-form.addEventListener('submit', async(e) => {
+form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const login = document.querySelector("[data-login]").value;
@@ -28,9 +28,10 @@ form.addEventListener('submit', async(e) => {
 
         const answer = await response.json();
 
-        if (response.ok) {
+        if (answer.role === 'user') {
             console.log("успешный вход");
-            window.location.href = '../user/index.html';
+            localStorage.setItem('username', login);
+            window.location.href = '/user/';
         } else {
             if (answer.role === 'user not found') {
                 alert("Пользователь не найден");
@@ -39,7 +40,7 @@ form.addEventListener('submit', async(e) => {
             } else {
                 alert("Ошибка входа: неизвестная ошибка");
             }
-        } 
+        }
     } catch (error) {
         console.error("Ошибка:", error);
         alert("Ошибка соединения с сервером");

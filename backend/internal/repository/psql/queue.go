@@ -281,3 +281,20 @@ func (q *Queues) AddPlayerToQueue(ctx context.Context, userID, gameID int) (int,
 
     return position, nil
 }
+
+func (q *Queues) GetIdByLogin(ctx context.Context, login string) (int, error) {
+    var id int
+    err := q.db.QueryRowContext(ctx,
+        `SELECT id FROM users WHERE login = $1`,
+        login,
+    ).Scan(&id)
+
+    if err != nil {
+        if err == sql.ErrNoRows {
+            return 0, errors.ErrUserNotFound
+        }
+        return 0, err
+    }
+
+    return id, nil
+}

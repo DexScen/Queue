@@ -34,17 +34,17 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
         - app-network
-  # frontend:
-  #   build:
-  #     context: ./frontend
-  #   depends_on:
-  #     - backend-sport
-  #   ports:
-  #     - "81:80"
-  #   volumes:
-  #     - ./frontend:/usr/share/nginx/html   
-  #   networks:
-  #     - app-network
+  frontend:
+    build:
+      context: ./frontend
+    depends_on:
+      - backend
+    ports:
+      - "81:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html   
+    networks:
+      - app-network
 
 networks:
   app-network:
@@ -53,4 +53,4 @@ networks:
 volumes:
   postgres_data:
   go-mod: #?
-  #frontend:
+  frontend:

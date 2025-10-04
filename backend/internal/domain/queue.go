@@ -37,3 +37,7 @@ type ChangeInfo struct {
 type PosInfo struct {
 	Pos int `json:"position"`
 }
+
+type IdInfo struct{
+	Id int `json:"id"`
+}

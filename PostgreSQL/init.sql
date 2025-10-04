@@ -41,6 +41,7 @@ VALUES
     ('bob', 'hash2', 'user'),
     ('charlie', 'hash3', 'user'),
     ('diana', 'hash4', 'user'),
+    ('test', '$2a$10$DK1jX0h4oMMfezmSyf43FeEnabdqBO5kSVoXtFRxaE3Qa047Gctlm', 'user'),
     ('edward', 'hash5', 'user');
 
 -- === Очередь ===
@@ -49,3 +50,9 @@ VALUES (1, 1, 1, 'waiting');
 
 INSERT INTO queue (user_id, game_id, position, status)
 VALUES (1, 2, 1, 'waiting');
+
+INSERT INTO queue (user_id, game_id, position, status)
+VALUES (5, 2, 1, 'waiting');
+
+INSERT INTO queue (user_id, game_id, position, status)
+VALUES (5, 3, 1, 'waiting');
