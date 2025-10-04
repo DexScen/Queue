@@ -31,7 +31,7 @@ form.addEventListener('submit', async (e) => {
         if (answer.role === 'user') {
             console.log("успешный вход");
             localStorage.setItem('username', login);
-            window.location.href = '/user/';
+            window.location.href = '/stands/';
         } else {
             if (answer.role === 'user not found') {
                 alert("Пользователь не найден");

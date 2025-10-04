@@ -41,7 +41,7 @@ form.addEventListener('submit', async(e) => {
             if (answer.role === 'user') {
                 console.log("регистрация прошла успешно, пользователя еще нет в системе.");
                 localStorage.setItem('username', login);
-                window.location.href = '../user/index.html';
+                window.location.href = '../stands/index.html';
             } else if (answer.role === 'user exists') {
                 console.log("пользователь уже существует.");
                 alert("Пользователь с таким логином уже существует.");
