@@ -13,22 +13,87 @@ document.addEventListener('DOMContentLoaded', async function () {
             profileLink.textContent = username;
         }
 
+        await requestNotificationPermission();
+        
         await loadAndRenderQueues(username);
         startAutoRefresh(username);  
     }
 });
 
+async function requestNotificationPermission() {
+    if ('Notification' in window && Notification.permission === 'default') {
+        try {
+            const permission = await Notification.requestPermission();
+            console.log('Разрешение на уведомления:', permission);
+        } catch (error) {
+            console.error('Ошибка при запросе разрешения:', error);
+        }
+    }
+}
+
+function sendMobileNotification(standName) {
+    if (!('Notification' in window)) {
+        console.log('Браузер не поддерживает уведомления');
+        return;
+    }
+
+    if (Notification.permission === 'granted') {
+        const notification = new Notification('Скоро ваша очередь!', {
+            body: `На стенде "${standName}" перед вами остался 1 человек!`,
+            icon: '/icon.png', 
+            tag: 'queue-notification', 
+            requireInteraction: true 
+        });
+
+        if ('vibrate' in navigator) {
+            navigator.vibrate([200, 100, 200]); 
+        }
+
+        notification.onclick = function() {
+            window.focus();
+            notification.close();
+        };
+
+    } else if (Notification.permission === 'default') {
+        requestNotificationPermission();
+    }
+}
+
+function checkForNotification(queues) {
+    if (!queues || !Array.isArray(queues)) return;
+
+    queues.forEach(stand => {
+        if (stand.current_people === 1) {
+            const notificationKey = `notified_${stand.id}`;
+            if (!localStorage.getItem(notificationKey)) {
+                sendMobileNotification(stand.name);
+                localStorage.setItem(notificationKey, 'true');
+                
+                setTimeout(() => {
+                    localStorage.removeItem(notificationKey);
+                }, 10 * 60 * 1000);
+            }
+        } else {
+            const notificationKey = `notified_${stand.id}`;
+            if (localStorage.getItem(notificationKey)) {
+                localStorage.removeItem(notificationKey);
+            }
+        }
+    });
+}
+
 async function loadAndRenderQueues(username) {
     try {
-            const response = await fetch(`http://localhost:8080/queue/${username}`);
+        const response = await fetch(`http://localhost:8080/queue/${username}`);
 
-            if (response.ok) {
-                const userData = await response.json();
-                renderQueues(userData);
-            }
-        } catch (error) {
-            console.error('Ошибка при загрузке очередей:', error);
+        if (response.ok) {
+            const userData = await response.json();
+            renderQueues(userData);
+            checkForNotification(userData);
         }
+    } catch (error) {
+        console.error('Ошибка при загрузке очередей:', error);
+    }
 }
 
 function startAutoRefresh(username) {
