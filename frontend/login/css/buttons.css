@@ -1,0 +1,47 @@
+.button {
+    --button-bg: var(--bg-neutral-1);
+    --button-bg-hover: var(--bg-focus-1);
+    --button-bg-active: var(--bg-active-1);
+    --button-text: var(--text-action);
+
+    background-color: var(--button-bg);
+    color: var(--button-text);
+    border: none;
+    border-radius: 8px;
+    height: 44px;
+    padding: 10px;
+    box-sizing: border-box;
+    flex: 1 1 auto;
+
+    &.primary {
+        --button-bg: var(--bg-accent-1);
+        --button-bg-hover: var(--bg-accent-hover);
+        --button-bg-active: var(--bg-accent-active);
+        --button-text: var(--text-primary-on-accent);
+    }
+
+    &.secondary {
+        --button-bg: var(--bg-neutral-1);
+        --button-bg-hover: var(--bg-focus-1);
+        --button-bg-active: var(--bg-active-1);
+        --button-text: var(--text-action);
+    }
+
+    &:disabled {
+        background-color: #ccc;
+    }
+
+    &:not(:disabled) {
+
+        @media screen and (hover: hover) {
+
+            &:hover {
+                background-color: var(--button-bg-hover);
+            }
+        }
+
+        &:active {
+            background-color: var(--button-bg-active);
+        }
+    }
+}
