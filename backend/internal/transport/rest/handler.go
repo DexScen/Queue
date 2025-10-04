@@ -16,6 +16,7 @@ import (
 type Queues interface {
 	GetAllGames(ctx context.Context, listGames *domain.ListGames) error
 	GetGameInfoByID(ctx context.Context, id int) (*domain.Game, error)
+	GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error
 
 	Register(ctx context.Context, user *domain.User) error
 	LogIn(ctx context.Context, login, password string) (string, error)
@@ -53,6 +54,7 @@ func (h *Handler) InitRouter() *mux.Router {
 	{
 		links.HandleFunc("/games", h.GetAllGames).Methods(http.MethodGet)
 		links.HandleFunc("/games/{id}", h.GetGameInfoByID).Methods(http.MethodGet)
+		links.HandleFunc("/queue/{login}", h.GetGamesByLogin).Methods(http.MethodGet)
 		
 		links.HandleFunc("/auth/register", h.Register).Methods(http.MethodPost)
 		links.HandleFunc("/auth/login", h.LogIn).Methods(http.MethodPost)
@@ -160,6 +162,27 @@ func (h *Handler) GetGameInfoByID(w http.ResponseWriter, r *http.Request){
 	}
 }
 
+func (h *Handler) GetGamesByLogin(w http.ResponseWriter, r *http.Request){
+	setHeaders(w)
+	vars := mux.Vars(r)
+	loginStr := vars["login"]
+
+	var list domain.ListGames
+	if err := h.queuesService.GetGamesByLogin(context.TODO(), loginStr, &list); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("GetGamesByLogin error:", err)
+		return
+	}
+
+	if jsonResp, err := json.Marshal(list); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		log.Println("GetGamesByLogin error:", err)
+		return
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(jsonResp)
+	}
+}
 
 func (h *Handler) LogIn(w http.ResponseWriter, r *http.Request) {
 	setHeaders(w)

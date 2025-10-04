@@ -12,6 +12,7 @@ import (
 type QueuesRepository interface {
 	GetAllGames(ctx context.Context, listGames *domain.ListGames) error
 	GetGameInfoByID(ctx context.Context, id int) (*domain.Game, error)
+	GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error
 
 	GetPassword(ctx context.Context, login string) (string, error)
 	GetRole(ctx context.Context, login string) (string, error)
@@ -38,6 +39,10 @@ func (q *Queues) GetAllGames(ctx context.Context, listGames *domain.ListGames) e
 
 func (q *Queues) GetGameInfoByID(ctx context.Context, id int) (*domain.Game, error) {
 	return q.repo.GetGameInfoByID(ctx, id)
+}
+
+func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error{
+	return q.repo.GetGamesByLogin(ctx, login, listGames)
 }
 
 func (q *Queues) LogIn(ctx context.Context, login, password string) (string, error) {

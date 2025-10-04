@@ -92,6 +92,45 @@ func (q *Queues) GetAllGames(ctx context.Context, listGames *domain.ListGames) e
     return rows.Err()
 }
 
+func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error {
+	rows, err := q.db.QueryContext(ctx, `
+		SELECT 
+			g.id,
+			g.name,
+			g.description,
+			g.max_slots,
+			g.duration_seconds,
+			COALESCE(COUNT(q2.id), 0) AS current_people
+		FROM users u
+		JOIN queue q1 ON u.id = q1.user_id
+		JOIN games g ON q1.game_id = g.id
+		LEFT JOIN queue q2 ON g.id = q2.game_id AND q2.status = 'waiting'
+		WHERE u.login = $1
+		GROUP BY g.id, g.name, g.description, g.max_slots, g.duration_seconds
+		ORDER BY g.id;
+	`, login)
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var game domain.Game
+		if err := rows.Scan(
+			&game.ID,
+			&game.Name,
+			&game.Description,
+			&game.Max_slots,
+			&game.Duration_seconds,
+			&game.Current_people,
+		); err != nil {
+			return err
+		}
+		*listGames = append(*listGames, game)
+	}
+
+	return rows.Err()
+}
 
 func (q *Queues) GetPassword(ctx context.Context, login string) (string, error) {
 	tr, err := q.db.Begin()
