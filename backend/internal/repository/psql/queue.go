@@ -92,7 +92,7 @@ func (q *Queues) GetAllGames(ctx context.Context, listGames *domain.ListGames) e
     return rows.Err()
 }
 
-func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error {
+func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGameInfos) error {
 	rows, err := q.db.QueryContext(ctx, `
 		SELECT 
 			g.id,
@@ -100,13 +100,22 @@ func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *d
 			g.description,
 			g.max_slots,
 			g.duration_seconds,
-			COALESCE(COUNT(q2.id), 0) AS current_people
+			COALESCE(COUNT(q2.id), 0) AS current_people,
+			COALESCE(pos.position, 0) AS user_position
 		FROM users u
 		JOIN queue q1 ON u.id = q1.user_id
 		JOIN games g ON q1.game_id = g.id
 		LEFT JOIN queue q2 ON g.id = q2.game_id AND q2.status = 'waiting'
+		LEFT JOIN (
+			SELECT 
+				game_id,
+				user_id,
+				ROW_NUMBER() OVER (PARTITION BY game_id ORDER BY joined_at) AS position
+			FROM queue
+			WHERE status = 'waiting'
+		) AS pos ON pos.game_id = g.id AND pos.user_id = u.id
 		WHERE u.login = $1
-		GROUP BY g.id, g.name, g.description, g.max_slots, g.duration_seconds
+		GROUP BY g.id, g.name, g.description, g.max_slots, g.duration_seconds, pos.position
 		ORDER BY g.id;
 	`, login)
 	if err != nil {
@@ -115,7 +124,7 @@ func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *d
 	defer rows.Close()
 
 	for rows.Next() {
-		var game domain.Game
+		var game domain.GameInfo
 		if err := rows.Scan(
 			&game.ID,
 			&game.Name,
@@ -123,6 +132,7 @@ func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *d
 			&game.Max_slots,
 			&game.Duration_seconds,
 			&game.Current_people,
+			&game.Position,
 		); err != nil {
 			return err
 		}
@@ -131,6 +141,7 @@ func (q *Queues) GetGamesByLogin(ctx context.Context, login string, listGames *d
 
 	return rows.Err()
 }
+
 
 func (q *Queues) GetPassword(ctx context.Context, login string) (string, error) {
 	tr, err := q.db.Begin()

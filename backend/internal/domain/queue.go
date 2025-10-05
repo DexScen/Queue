@@ -1,7 +1,5 @@
 package domain
 
-// import "time"
-
 type Game struct {
 	ID               int    `json:"id"`
 	Name             string `json:"name"`
@@ -19,6 +17,18 @@ type User struct {
 	Password string `json:"password"`
 	Role     string `json:"role"`
 }
+
+type GameInfo struct {
+	ID               int    `json:"id"`
+	Name             string `json:"name"`
+	Description      string `json:"description"`
+	Max_slots        int    `json:"max_slots"`
+	Current_people   int    `json:"current_people"`
+	Duration_seconds int    `json:"duration_seconds"`
+	Position int `json:"position"`
+}
+
+type ListGameInfos []GameInfo
 
 type ListUsers []User
 

@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     try {
         const standsData = await loadAllStands();
-        
+
         if (standsData) {
             renderAllStands(standsData);
         } else {
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', async function () {
 async function loadAllStands() {
     try {
         const response = await fetch(`http://localhost:8080/games`);
-        
+
         if (response.ok) {
             const standsData = await response.json();
             return standsData;
@@ -43,33 +43,40 @@ function renderAllStands(stands) {
 
     stands.forEach(stand => {
         const waitTimeMinutes = Math.ceil(stand.current_people * stand.duration_seconds / 60);
-        
+
         const standCard = document.createElement('article');
+        standCard.style.margin = '10px';
         standCard.className = 'card-stand';
         standCard.innerHTML = `
-            <section>
-                <h2 class="text-title">${stand.name}</h2>
-                <p class="text-description">${stand.description}</p>
-            </section>
-            <section class="div-container">
-                <div class="div-info">
-                    <p>Очередь: ${stand.current_people}/${stand.max_slots}</p>
-                    <p>Время ~ ${waitTimeMinutes} мин</p>
-                </div>
-                <button class="btn-standart" data-stand-id="${stand.id}">
-                    Записаться
-                </button>
-            </section>
-            <section class="div-img">
-                <img class="img-stand" src="../assets/photo1.jpg" alt="${stand.name}">
-            </section>
+      
+      <div class="container">
+      <section>
+        <h2 class="text-title">${stand.name}</h2>
+        <p class="text-description">${stand.description}</p>
+      </section>
+      <section class="div-container">
+        <div class="div-info">
+          <p>Очередь: ${stand.current_people } чел<br>Человек в команде: ${stand.max_slots}</p>
+          <p>Время ~ ${waitTimeMinutes}  мин</p>
+        </div>
+
+        <button class="btn-standart" data-stand-id="${stand.id}">
+          Записаться
+        </button>
+      </section>
+      </div>
+      <section class="div-img card-image">
+        <img style="object-fit: fill" class="img-stand card-img" src="../assets/photo1.jpg" alt="${stand.name}">
+      </section>
+   
+            
         `;
 
         container.appendChild(standCard);
     });
 
     document.querySelectorAll('.btn-standart').forEach(button => {
-        button.addEventListener('click', async function() {
+        button.addEventListener('click', async function () {
             const standId = this.getAttribute('data-stand-id');
             await signUpForStand(standId);
         });
@@ -86,18 +93,18 @@ async function signUpForStand(standId) {
 
     try {
         const authResponse = await fetch(`http://localhost:8080/auth/${username}`);
-        
+
         if (!authResponse.ok) {
             throw new Error('Ошибка при получении user_id');
         }
-        
+
         const userData = await authResponse.json();
         const userId = userData.id;
 
         const queuesResponse = await fetch(`http://localhost:8080/queue/${username}`);
         if (queuesResponse.ok) {
             const userQueues = await queuesResponse.json();
-            
+
             if (userQueues && Array.isArray(userQueues)) {
                 const alreadyRegistered = userQueues.some(queue => queue.id === parseInt(standId));
                 if (alreadyRegistered) {
@@ -119,7 +126,7 @@ async function signUpForStand(standId) {
         });
 
         console.log('Статус ответа:', signupResponse.status);
-        
+
         if (signupResponse.ok) {
             alert('Вы успешно записались в очередь!');
             const standsData = await loadAllStands();

@@ -5,11 +5,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>стенд</title>
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="./css/style.css">  
+  <link rel="stylesheet" href="./css/blocks.css">
+  <link rel="stylesheet" href="./css/cards.css">
   <script src="js/script.js" defer></script>
 </head>
 
-<body>
+<body >
   <header class="header">
     <nav class="nav-div">
       <ul class="nav">
@@ -40,8 +42,10 @@
       </ul>
     </nav>
   </header>
+
   <main class="div-card-stand container-stands main-container container">
-    <article class="card-stand">
+    <article style="margin: 10px;" class="card-stand card" >
+      <div class="container">
       <section>
         <h2 class="text-title">Название стенда</h2>
         <p class="text-description">Описание стенда: Lorem ipsum dolor sit amet consectetur, adipisicing elit. Cum quasi
@@ -57,14 +61,13 @@
           Записаться
         </button>
       </section>
-      <section class="div-img">
-        <img class="img-stand" src="../assets/photo1.jpg" alt="фото стенда">
+      </div>
+      <section class="div-img card-image">
+        <img style="object-fit: cover" class="img-stand card-img" src="../assets/photo1.jpg" alt="фото стенда">
       </section>
     </article>
   </main>
-  <footer>
-    <p>Сюда бы я вписал информацию об авторе и ссылки на другие сайты</p>
-  </footer>
+  
 
 </body>
 </body>

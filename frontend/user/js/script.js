@@ -40,8 +40,8 @@ function sendMobileNotification(standName) {
     if (Notification.permission === 'granted') {
         const notification = new Notification('Скоро ваша очередь!', {
             body: `На стенде "${standName}" перед вами остался 1 человек!`,
-            icon: '/icon.png', 
-            tag: 'queue-notification', 
+            // icon: '/icon.png', 
+            // tag: 'queue-notification', 
             requireInteraction: true 
         });
 
@@ -53,9 +53,6 @@ function sendMobileNotification(standName) {
             window.focus();
             notification.close();
         };
-
-    } else if (Notification.permission === 'default') {
-        requestNotificationPermission();
     }
 }
 
@@ -68,10 +65,6 @@ function checkForNotification(queues) {
             if (!localStorage.getItem(notificationKey)) {
                 sendMobileNotification(stand.name);
                 localStorage.setItem(notificationKey, 'true');
-                
-                setTimeout(() => {
-                    localStorage.removeItem(notificationKey);
-                }, 10 * 60 * 1000);
             }
         } else {
             const notificationKey = `notified_${stand.id}`;
@@ -98,9 +91,9 @@ async function loadAndRenderQueues(username) {
 
 function startAutoRefresh(username) {
     setInterval(async () => {
-        console.log("автоматическое обновление данных... (кд - 5 сек)");
+        console.log("автоматическое обновление данных... (кд - 10 сек)");
         await loadAndRenderQueues(username);
-    }, 5000); // 5000 мс 
+    }, 5000); // 5000 мс = 5 секунд
 }
 
 function renderQueues(queues) {
@@ -124,14 +117,13 @@ function renderQueues(queues) {
         card.className = 'card-profile back-color-white';
         card.setAttribute('data-stand-id', stand.id);
 
-        const waitTimeMinutes = Math.ceil(stand.current_people * stand.duration_seconds / 60);
+        const waitTimeMinutes = Math.ceil((stand.position-1) * stand.duration_seconds / 60);
 
-        //  <button type="button" class="btn-standart">обновить</button>
         card.innerHTML = `
             <h3 class="queue-name">${stand.name}</h3>
             <p class="queue-info">
                 еще ${waitTimeMinutes} мин<br>
-                очередь: ${stand.current_people} чел.
+                позиция: ${stand.position-1}
             </p>
             <div class="queue-actions">
                 <button type="button" class="btn-delete" data-stand-id="${stand.id}">удалить</button>
@@ -170,14 +162,21 @@ function renderQueues(queues) {
                 });
 
                 if (response.ok) {
-                    const cardToRemove = document.querySelector(`[data-stand-id="${standId}"]`);
-                    if (cardToRemove) {
-                        cardToRemove.remove();
-                    }
-                    await loadAndRenderQueues(username);
+                const cardToRemove = document.querySelector(`[data-stand-id="${standId}"]`);
+                if (cardToRemove) {
+                    cardToRemove.classList.add('smoke-vanish'); // добавляем анимацию
+                    setTimeout(() => {
+                        cardToRemove.remove(); // удаляем после анимации
+                        loadAndRenderQueues(username); // перерисовываем
+                    }, 800); // 0.8 сек — совпадает с CSS
+                }
 
-                    console.log(`Очередь ${standId} успешно удалена`);
-                } else {
+                // очищаем флаг уведомления
+                localStorage.removeItem(`notified_${standId}`);
+
+                console.log(`Очередь ${standId} успешно удалена`);
+                }
+                else {
                     console.error('Ошибка при удалении:', response.status);
                     alert('Не удалось удалить запись из очереди');
                 }
@@ -188,3 +187,56 @@ function renderQueues(queues) {
         });
     });
 }
+
+function checkForNotification(queues) {
+    if (!queues || !Array.isArray(queues)) return;
+
+    // Сначала проверим все существующие уведомления в localStorage
+    const allKeys = Object.keys(localStorage);
+    const notificationKeys = allKeys.filter(key => key.startsWith('notified_'));
+    
+    // Очищаем уведомления для стендов, которых больше нет в очередях пользователя
+    notificationKeys.forEach(key => {
+        const standId = key.replace('notified_', '');
+        const standExists = queues.some(stand => stand.id.toString() === standId);
+        
+        if (!standExists) {
+            localStorage.removeItem(key);
+            console.log(`Удалено уведомление для несуществующего стенда: ${standId}`);
+        }
+    });
+
+    // Теперь обрабатываем текущие очереди
+    queues.forEach(stand => {
+        const notificationKey = `notified_${stand.id}`;
+        
+        if (stand.current_people === 1) {
+            // Если перед пользователем 1 человек и уведомление еще не показывалось
+            if (!localStorage.getItem(notificationKey)) {
+                sendMobileNotification(stand.name);
+                localStorage.setItem(notificationKey, 'true');
+                console.log(`Показано уведомление для стенда: ${stand.name}`);
+            } else {
+                console.log(`Уведомление для стенда ${stand.name} уже было показано`);
+            }
+        } else {
+            // Если состояние изменилось (не 1 человек), очищаем флаг уведомления
+            if (localStorage.getItem(notificationKey)) {
+                localStorage.removeItem(notificationKey);
+                console.log(`Очищен флаг уведомления для стенда: ${stand.name}`);
+            }
+        }
+    });
+}
+
+window.addEventListener('beforeunload', function() {
+    // Очищаем все флаги уведомлений
+    const allKeys = Object.keys(localStorage);
+    const notificationKeys = allKeys.filter(key => key.startsWith('notified_'));
+    
+    notificationKeys.forEach(key => {
+        localStorage.removeItem(key);
+    });
+    
+    console.log('Очищены флаги уведомлений при выходе со страницы');
+});

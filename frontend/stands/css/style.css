@@ -104,13 +104,13 @@ text-align: center;
     padding-top: 10px;
     margin-top: 10px;
 }
-.div-card-stand{
+/* .div-card-stand{
     display: flex;
     justify-content: center;
     padding: 10px;
    
     
-}
+} */
 
 .card-stand{
     background-color: var(--bg-white);

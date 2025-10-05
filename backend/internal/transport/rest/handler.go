@@ -16,7 +16,7 @@ import (
 type Queues interface {
 	GetAllGames(ctx context.Context, listGames *domain.ListGames) error
 	GetGameInfoByID(ctx context.Context, id int) (*domain.Game, error)
-	GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGames) error
+	GetGamesByLogin(ctx context.Context, login string, listGames *domain.ListGameInfos) error
 	GetIdByLogin(ctx context.Context, login string) (int, error)
 
 	Register(ctx context.Context, user *domain.User) error
@@ -38,14 +38,7 @@ func NewQueues(queues Queues) *Handler {
 	}
 }
 
-func setHeaders(w http.ResponseWriter) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-}
-
 func (h *Handler) OptionsHandler(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	w.WriteHeader(http.StatusOK)
 }
 
@@ -77,7 +70,6 @@ func (h *Handler) InitRouter() *mux.Router {
 }
 
 func (h *Handler) AddPlayerToQueue(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	var addInfo domain.ChangeInfo
 	var pos domain.PosInfo
 	if err := json.NewDecoder(r.Body).Decode(&addInfo); err != nil {
@@ -104,7 +96,6 @@ func (h *Handler) AddPlayerToQueue(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) RemovePlayerFromQueue(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	var removeInfo domain.ChangeInfo
 
 	if err := json.NewDecoder(r.Body).Decode(&removeInfo); err != nil {
@@ -124,7 +115,6 @@ func (h *Handler) RemovePlayerFromQueue(w http.ResponseWriter, r *http.Request) 
 }
 
 func (h *Handler) GetAllGames(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	var list domain.ListGames
 	if err := h.queuesService.GetAllGames(context.TODO(), &list); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -143,7 +133,6 @@ func (h *Handler) GetAllGames(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetGameInfoByID(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	vars := mux.Vars(r)
 	idStr := vars["id"]
 	id, err := strconv.Atoi(idStr)
@@ -172,11 +161,10 @@ func (h *Handler) GetGameInfoByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetGamesByLogin(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	vars := mux.Vars(r)
 	loginStr := vars["login"]
 
-	var list domain.ListGames
+	var list domain.ListGameInfos
 	if err := h.queuesService.GetGamesByLogin(context.TODO(), loginStr, &list); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Println("GetGamesByLogin error:", err)
@@ -194,7 +182,6 @@ func (h *Handler) GetGamesByLogin(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) LogIn(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	var info domain.LoginInfo
 	var roleInfo domain.RoleInfo
 
@@ -230,7 +217,6 @@ func (h *Handler) LogIn(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) Register(w http.ResponseWriter, r *http.Request) {
-	setHeaders(w)
 	var user domain.User
 	var roleInfo domain.RoleInfo
 
@@ -299,7 +285,6 @@ func (h *Handler) GetIdByLogin(w http.ResponseWriter, r *http.Request){
 }
 
 func (h *Handler) GetPlayersByGameID(w http.ResponseWriter, r *http.Request){
-	setHeaders(w)
 	var list domain.ListUsers
 	vars := mux.Vars(r)
 	idStr := vars["id"]
