@@ -202,7 +202,6 @@ html, body {
     min-width: 160px;
     display: flex;
     justify-content: right;
-    padding: 10px;
     align-items: center;
 }
 
