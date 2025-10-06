@@ -72,8 +72,6 @@ Queue/
 
 └── README.md
 
-````
-
 ---
 
 ## ⚙️ Технологии
@@ -124,7 +122,7 @@ Queue/
 git clone https://github.com/DexScen/Queue.git
 
 cd Queue
-````
+```
 
 ### 3. Создайте `.env` в `backend/` по примеру:
 
